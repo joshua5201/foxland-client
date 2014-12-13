@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Foxland</string>
+    <string name="action_reload">重新載入地區資訊</string>
+    <string name="action_insert">上傳新地區資訊</string>
+    <string name="action_about">關於 Foxland</string>
+
+</resources>

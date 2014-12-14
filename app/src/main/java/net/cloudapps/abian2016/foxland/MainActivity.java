@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.net.wifi.WifiManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
 import android.content.Context;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
@@ -21,7 +24,10 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.getContents();
+        if (this.verifyConnection())
+            this.getRegionInfo();
+        else
+            this.getContents("file:///android_asset/NetworkError.htm");
     }
 
     @Override
@@ -34,31 +40,36 @@ public class MainActivity extends ActionBarActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_reload) {
-            this.getContents();
+            if (this.verifyConnection())
+                this.getRegionInfo();
+            else
+                this.getContents("file:///android_asset/NetworkError.htm");
             return true;
         }
         else if (id == R.id.action_insert) {
-            String requestURL = "http://abian2016.cloudapp.net/regions/new";
-            WebView myWebView = (WebView) findViewById(R.id.webview);
-            myWebView.setWebViewClient(new WebViewClient());
-            WebSettings webSettings = myWebView.getSettings();
-            webSettings.setJavaScriptEnabled(true);
-            myWebView.loadUrl(requestURL);
+            if (this.verifyConnection()) {
+                WifiManager wifiManager;
+                wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                String requestURL = "http://abian2016.cloudapp.net/regions/new?ssid=";
+                requestURL += wifiInfo.getSSID() + wifiInfo.getBSSID();
+                this.getContents(requestURL);
+            }
+            else
+                this.getContents("file:///android_asset/NetworkError.htm");
             return true;
         }
         else if (id == R.id.action_about) {
-            String requestURL = "http://abian2016.cloudapp.net/regions/about";
-            WebView myWebView = (WebView) findViewById(R.id.webview);
-            myWebView.setWebViewClient(new WebViewClient());
-            WebSettings webSettings = myWebView.getSettings();
-            webSettings.setJavaScriptEnabled(true);
-            myWebView.loadUrl(requestURL);
+            if (this.verifyConnection())
+                this.getContents("http://abian2016.cloudapp.net/regions/about");
+            else
+                this.getContents("file:///android_asset/NetworkError.htm");
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    public boolean getContents() {
+    public boolean getRegionInfo() {
         WifiManager mainWifiObj;
         mainWifiObj = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         class WifiScanReceiver extends BroadcastReceiver {
@@ -77,11 +88,21 @@ public class MainActivity extends ActionBarActivity {
                 requestURL += wifiScanList.get(i).SSID;
                 requestURL += wifiScanList.get(i).BSSID;
             }
+        return this.getContents(requestURL);
+    }
+
+    public boolean getContents(String requestURL) {
         WebView myWebView = (WebView) findViewById(R.id.webview);
         myWebView.setWebViewClient(new WebViewClient());
         WebSettings webSettings = myWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         myWebView.loadUrl(requestURL);
         return true;
+    }
+
+    public boolean verifyConnection() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }

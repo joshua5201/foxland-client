@@ -48,11 +48,24 @@ public class MainActivity extends ActionBarActivity {
         }
         else if (id == R.id.action_insert) {
             if (this.verifyConnection()) {
+                WifiManager mainWifiObj;
+                mainWifiObj = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                class WifiScanReceiver extends BroadcastReceiver {
+                    public void onReceive(Context c, Intent intent) {
+                    }
+                }
+                WifiScanReceiver wifiReciever = new WifiScanReceiver();
+                registerReceiver(wifiReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+                List<ScanResult> wifiScanList = mainWifiObj.getScanResults();
                 WifiManager wifiManager;
                 wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
                 WifiInfo wifiInfo = wifiManager.getConnectionInfo();
                 String requestURL = "http://abian2016.cloudapp.net/regions/new?ssid=";
-                requestURL += wifiInfo.getSSID() + wifiInfo.getBSSID();
+                requestURL += wifiInfo.getSSID().replace("\"", "");
+                if (!wifiScanList.isEmpty())
+                    for (int i = 0; i < wifiScanList.size(); i++)
+                        if (wifiScanList.get(i).SSID.equals(wifiInfo.getSSID().replace("\"", "")))
+                            requestURL += wifiScanList.get(i).BSSID;
                 this.getContents(requestURL);
             }
             else

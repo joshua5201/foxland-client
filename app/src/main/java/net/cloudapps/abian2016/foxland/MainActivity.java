@@ -48,6 +48,7 @@ public class MainActivity extends ActionBarActivity {
         }
         else if (id == R.id.action_insert) {
             if (this.verifyConnection()) {
+                /* Need to rewrite */
                 WifiManager mainWifiObj;
                 mainWifiObj = (WifiManager) getSystemService(Context.WIFI_SERVICE);
                 class WifiScanReceiver extends BroadcastReceiver {
@@ -67,6 +68,7 @@ public class MainActivity extends ActionBarActivity {
                         if (wifiScanList.get(i).SSID.equals(wifiInfo.getSSID().replace("\"", "")))
                             requestURL += wifiScanList.get(i).BSSID;
                 this.getContents(requestURL);
+                /* Need to rewrite */
             }
             else
                 this.getContents("file:///android_asset/NetworkError.htm");
